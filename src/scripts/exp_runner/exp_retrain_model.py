@@ -19,19 +19,22 @@ def generate_commands(databases: List[Database], seeds: list[int], python_versio
     commands = []
     for database in databases:
         for model in model_list:
-            workload_runs = " ".join(model.get_training_workloads(database))
+            retraining_workload_runs = [str(model.get_data_base_dir() / "imdb" / "index_retraining" / "index_retraining.json"),
+                                        str(model.get_data_base_dir() / "imdb" / "seq_retraining" / "seq_retraining.json")]
+            retraining_workload_runs = " ".join(retraining_workload_runs)
             test_workload_runs = model.get_test_workloads(database)
             statistics_path = model.get_statistics(source_path=ClusterPaths(), database=database)
-
+            if model == QPPNetModelConfig():
+                statistics_path = ClusterPaths().json / "imdb/feature_stats_retraining.json"
             for seed in seeds:
                 command = (f"python{python_version} main.py "
-                           f"--mode train "
-                           f"--wandb_project cost-eval "
+                           f"--mode retrain "
+                           f"--wandb_project cost-eval-retrain "
                            f"--model_type {model.name.NAME} "
                            f"--device {model.device} "
-                           f"--model_dir {model.get_model_dir(ClusterPaths(), database)} "
-                           f"--target_dir {model.get_eval_dir(ClusterPaths(), database)} "
-                           f"--workload_runs {workload_runs} "
+                           f"--model_dir {model.get_model_dir(ClusterPaths(), database, True)} "
+                           f"--target_dir {model.get_eval_dir(ClusterPaths(), database, True)} "
+                           f"--workload_runs {retraining_workload_runs} "
                            f"--statistics_file {statistics_path} "
                            f"--seed {seed} "
                            f"--wandb_name {model.name.NAME}/{database.db_name}/{seed}")
@@ -55,45 +58,21 @@ def generate_commands(databases: List[Database], seeds: list[int], python_versio
 if __name__ == '__main__':
     setup_steps = [Rsync(src=[str(LocalPaths().code)], dest=[ClusterPaths().root], update=True, put=True),
                    Rsync(src=[str(LocalPaths().workloads)], dest=[ClusterPaths().data], update=True, put=True),
-                   Rsync(src=[str(LocalPaths().runs)], dest=[ClusterPaths().data], update=True, put=True),
-                   #SetupVenv(use_requirements_txt=True,
-                   #          requirements_txt_filename=f'{ClusterPaths().code}/requirements/requirements.txt',
-                   #          force=False,
-                   #          python_cmd=f'python3.9',
-                   #          python_version='3.9')
-                   ]
+                   Rsync(src=[str(LocalPaths().runs)], dest=[ClusterPaths().data], update=True, put=True)]
 
     purge_steps = [KillAllScreens()]
     pickup_steps = [Rsync(src=[ClusterPaths().runs], dest=[LocalPaths().data], put=False, update=True)]
 
-    databases = [
-        Database('baseball'),
-        Database('tpc_h'),
-        Database('imdb')
-    ]
-
+    databases = [Database('imdb')]
     seeds = [0, 1, 2]
-    node = TrainingServers.NODE03
 
-    # Standard Models
+    node = TrainingServers.NODE04
     # model = ScaledPostgresModelConfig()
     # model = FlatModelConfig()
     # model = E2EModelConfig()
-    # model = QPPNetModelConfig()
-    # model = MSCNModelConfig()
     # model = DACEModelConfig()
     # model = QueryFormerModelConfig()
     model = ZeroShotModelConfig()
-
-    # Ablation Models (without postgres Estimates)
-    # model = DACEModelNoCostsConfig()
-    # model = QPPModelNoCostsConfig()
-
-    # Ablation Models (actual cardinalities)
-    # model = FlatModelActCardModelConfig()
-    # model = QPPModelActCardsConfig()
-    # model = DACEModelActCardConfig()
-    # model = ZeroShotModelActCardConfig()
 
     runner = ExpRunner(replicate=False,
                        node_names=[node["hostname"]],

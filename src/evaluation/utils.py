@@ -111,13 +111,17 @@ def obtain_join_bushiness(plan: SimpleNamespace, left_joins=0, right_joins=0, bu
     return left_joins, right_joins, bushy_joins
 
 
-def get_model_results(workload: EvaluationWorkload, model_configs: List[ModelConfig]) -> pd.DataFrame:
+def get_model_results(workload: EvaluationWorkload, model_configs: List[ModelConfig], retrain: bool = False) -> pd.DataFrame:
     parsed_plans = [workload.get_workload_path(LocalPaths().parsed_plans)]
     plans, database_statistics = read_workload_runs(workload_run_paths=parsed_plans)
     cardinalities = Evaluator.readout_workload_information(plans, workload)
 
     # Combine model predictions to common dataframe
-    predictions = Evaluator.combine_predictions(model_configs, workload, [0, 1, 2])
+    predictions = Evaluator.combine_predictions(models=model_configs,
+                                                workload=workload,
+                                                seeds=[0, 1, 2],
+                                                retrain=retrain)
+
     predictions = predictions.groupby(['model', 'query_index', 'label'])['prediction'].mean().reset_index()
 
     # Merge cardinalities with predictions
@@ -208,7 +212,7 @@ def draw_predictions(workload: EvaluationWorkload,
                      data=results,
                      label="Real Runtime",
                      color="black",
-                     linewidth=2,
+                     linewidth=3.5,
                      zorder=100)
 
     pred_ax.set_yscale("log")

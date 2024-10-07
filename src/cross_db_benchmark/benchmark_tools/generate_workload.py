@@ -295,7 +295,7 @@ def generate_workload(dataset, target_path, num_queries=100, max_no_joins=3, max
     os.makedirs(target_dir, exist_ok=True)
     with open(target_path, "w") as text_file:
         text_file.write('\n'.join(queries))
-
+    return queries
 
 def sample_outer_groupby(complex_predicates, q, randstate):
     subquery_alias = 'subgb'

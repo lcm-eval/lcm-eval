@@ -222,12 +222,12 @@ class Evaluator:
             self.metric_collection += all_metrics
 
     @staticmethod
-    def combine_predictions(models: list[ModelConfig], workload: EvaluationWorkload, seeds: List[int]) -> pd.DataFrame:
+    def combine_predictions(models: list[ModelConfig], workload: EvaluationWorkload, seeds: List[int], retrain=False) -> pd.DataFrame:
         # Reading out and merge different model predictions
         results = []
         for seed in seeds:
             for model in models:
-                prediction_path = Path(f"{model.get_eval_dir(source_path=LocalPaths(), database=workload.database)}/"
+                prediction_path = Path(f"{model.get_eval_dir(source_path=LocalPaths(), database=workload.database, retrain=retrain)}/"
                                        f"{workload.folder}/"
                                        f"{workload.get_workload_name()}_{seed}_test_pred.csv")
                 assert prediction_path.exists(), f"Prediction file {prediction_path} does not exist"

@@ -35,6 +35,7 @@ from training.training.metrics import RMSE, MAPE, QError, Metric
 from models.zeroshot.specific_models.postgres_zero_shot import PostgresZeroShotModel
 from predict import predict_model
 from train import train_model
+from attrs import evolve
 
 
 def init_model(statistics_file: Path,
@@ -232,6 +233,7 @@ def use_model(mode: str,
                             metrics=metrics,
                             filetype='.pt')
 
+
     run: Optional[Run] = None
     if wandb_project:
         run = wandb.init(project=wandb_project,
@@ -239,7 +241,10 @@ def use_model(mode: str,
                          config=attrs.asdict(config))
 
     # Train model
-    if mode == "train":
+    if mode == "retrain":
+        epochs_wo_improvement = 0
+
+    if mode in ["train", "retrain"]:
         if isinstance(model_config, TabularModelConfig):
             train_tabular_model(workload_runs=wl_runs,
                                 config=config,
@@ -260,7 +265,7 @@ def use_model(mode: str,
 
         print(f'--Run {config.name.NAME} ended at {datetime.now().strftime("%d/%m/%Y %H:%M:%S")} --')
 
-    if mode in ["train", "predict"]:
+    if mode in ["train", "retrain", "predict"]:
         if isinstance(model_config, TabularModelConfig):
             predict_tabular_model(config=config,
                                   workload_runs=wl_runs,
@@ -269,7 +274,8 @@ def use_model(mode: str,
                                   target_path=target_dir,
                                   run=run)
         else:
-            predict_model(config=config,
+            predict_model(mode=mode,
+                          config=config,
                           workload_runs=wl_runs,
                           test_loaders=test_loaders,
                           model_dir=model_dir,
@@ -313,7 +319,7 @@ def get_model_config(model_type: str, m_args: dict) -> ModelConfig:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--mode', choices=["train", "predict", "explain"])
+    parser.add_argument('--mode', choices=["train", "predict", "explain", "retrain"])
     parser.add_argument('--model_type', required=True)
     parser.add_argument('--workload_runs', default=None, nargs='+')
     parser.add_argument('--test_workload_runs', default=None, nargs='+')
@@ -352,6 +358,17 @@ if __name__ == '__main__':
         runs = WorkloadRuns(train_workload_runs=train_runs, test_workload_runs=test_runs)
 
     model_config = get_model_config(model_type=args.model_type, m_args=model_args)
+
+    # If retraining, set specific model parameters
+    if args.mode == "retrain":
+        model_config = evolve(model_config, epochs=model_config.epochs + 100)
+        # Disable penalty for small values in case of retraining
+        if model_config.loss_class_name == "QLoss":
+            final_mlp_kwargs = model_config.final_mlp_kwargs
+            loss_class_kwargs = final_mlp_kwargs.pop('loss_class_kwargs')
+            loss_class_kwargs.update(penalty_negative=0)
+            final_mlp_kwargs.update(loss_class_kwargs=loss_class_kwargs)
+            model_config = evolve(model_config, final_mlp_kwargs=final_mlp_kwargs)
 
     args = dict(
         wandb_project=args.wandb_project,

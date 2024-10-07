@@ -11,7 +11,6 @@ from cross_db_benchmark.benchmark_tools.join_conditions import check_join_condit
 from cross_db_benchmark.benchmark_tools.load_database import load_database
 from cross_db_benchmark.benchmark_tools.parse_run import parse_run
 from cross_db_benchmark.benchmark_tools.run_workload import run_workload
-from cross_db_benchmark.benchmark_tools.scale_in_db import scale_in_db, scale_adaptively
 from cross_db_benchmark.meta_tools.inflate_cardinality_errors import inflate_cardinality_errors
 from cross_db_benchmark.meta_tools.scale_dataset import scale_up_dataset
 from cross_db_benchmark.meta_tools.slice_no_tables import slice_by_table_no
@@ -118,17 +117,8 @@ if __name__ == '__main__':
     if args.load_database:
         load_database(args.data_dir, args.dataset, args.database, args.db_name, args.database_conn_dict,
                       args.database_kwarg_dict, force=force)
-
-    if args.scale_in_db:
-        scale_in_db(args.data_dir, args.dataset, args.database, args.db_name, args.database_conn_dict,
-                    args.database_kwarg_dict, args.no_prev_replications)
-
     if args.drop_db:
         drop_db(args.database, args.db_name, args.database_conn_dict, args.database_kwarg_dict)
-
-    if args.scale_adaptively:
-        scale_adaptively(args.data_dir, args.dataset, args.database, args.db_name, args.database_conn_dict,
-                         args.database_kwarg_dict, args.no_prev_replications, args.source, args.target)
 
     if args.generate_workload:
         generate_workload(args.dataset, args.target, num_queries=args.workload_num_queries,

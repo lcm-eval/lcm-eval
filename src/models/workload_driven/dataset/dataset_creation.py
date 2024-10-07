@@ -152,7 +152,7 @@ def get_collate_func(model_config: ModelConfig, database_statistics: dict, featu
                               column_statistics=column_statistics,
                               word_embeddings=word_embeddings,
                               dim_word_hash=dim_word_hash,
-                              dim_word_emdb=dim_word_emdb,
+                              dim_word_embedding=dim_word_emdb,
                               histogram_bin_size = model_config.histogram_bin_number,
                               max_num_filters = model_config.max_num_filters,
                               dim_bitmaps=dim_bitmaps)

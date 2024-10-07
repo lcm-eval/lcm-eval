@@ -120,6 +120,10 @@ class BenchmarkWorkload(EvaluationWorkload):
     def get_workload_name(self) -> str:
         return self.wl_name
 
+class RetrainingWorkloads:
+    class AccessPath:
+        imdb = EvaluationWorkload(database=Database("imdb"), folder="access_path", wl_name="imdb_access_path")
+
 
 class EvalWorkloads:
 
@@ -172,45 +176,34 @@ class EvalWorkloads:
             #                    wl_name="index.region.r_regionkey", table="region", column="r_regionkey"),
         ]
 
-
-
-
         imdb_seq = [
             LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-                                wl_name="seq.cast_info.nr_order", table="cast_info", column="nr_order"),
-            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-                                wl_name="seq.title.episode_nr", table="title", column="episode_nr"),
-            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-                                wl_name="seq.title.production_year", table="title", column="production_year"),
-            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
                                 wl_name="seq.aka_name.person_id", table="aka_name", column="person_id"),
+            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
+                                wl_name="seq.cast_info.nr_order", table="cast_info", column="nr_order"),
             LiteralEvalWorkload(database=Database("imdb"), folder=folder,
                                 wl_name="seq.cast_info.movie_id", table="cast_info", column="movie_id"),
             LiteralEvalWorkload(database=Database("imdb"), folder=folder,
                                 wl_name="seq.person_info.person_id", table="person_info", column="person_id"),
-            # LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-            #                    wl_name="seq.cast_info.person_role_id", table="cast_info", column="person_role_id"), # ToDo: Fix Datatype and run again
-            # LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-            #                    wl_name="seq.title.episode_of_id", table="title", column="episode_of_id"), # ToDo: Fix Datatype and run again
+            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
+                                wl_name="seq.title.episode_nr", table="title", column="episode_nr"),
+            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
+                                wl_name="seq.title.production_year", table="title", column="production_year"),
         ]
 
         imdb_idx = [
             LiteralEvalWorkload(database=Database("imdb"), folder=folder,
+                                wl_name="index.aka_name.person_id", table="aka_name", column="person_id"),
+            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
                                 wl_name="index.cast_info.nr_order", table="cast_info", column="nr_order"),
+            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
+                                wl_name="index.cast_info.movie_id", table="cast_info", column="movie_id"),
             LiteralEvalWorkload(database=Database("imdb"), folder=folder,
                                 wl_name="index.title.episode_nr", table="title", column="episode_nr"),
             LiteralEvalWorkload(database=Database("imdb"), folder=folder,
                                 wl_name="index.title.production_year", table="title", column="production_year"),
             LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-                                wl_name="index.aka_name.person_id", table="aka_name", column="person_id"),
-            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-                                wl_name="index.cast_info.movie_id", table="cast_info", column="movie_id"),
-            LiteralEvalWorkload(database=Database("imdb"), folder=folder,
                                 wl_name="index.person_info.person_id", table="person_info", column="person_id"),
-            #LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-            #                    wl_name="index.cast_info.person_role_id", table="cast_info", column="person_role_id"),
-            #LiteralEvalWorkload(database=Database("imdb"), folder=folder,
-            #                    wl_name="index.title.episode_of_id", table="title", column="episode_of_id"),
         ]
 
         baseball_seq = [

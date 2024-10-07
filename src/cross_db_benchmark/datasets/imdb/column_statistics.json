@@ -130,7 +130,7 @@
         1469255.0,
         2528186.0
       ],
-      "datatype": "float"
+      "datatype": "int"
     },
     "season_nr": {
       "nan_ratio": 0.5634229478007461,
@@ -151,7 +151,7 @@
         8.0,
         2013.0
       ],
-      "datatype": "float"
+      "datatype": "int"
     },
     "episode_nr": {
       "nan_ratio": 0.5639723262002474,
@@ -1677,7 +1677,7 @@
         2545920.200000001,
         3140339.0
       ],
-      "datatype": "float"
+      "datatype": "int"
     },
     "note": {
       "nan_ratio": 0.6071913454965553,

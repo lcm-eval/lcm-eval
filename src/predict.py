@@ -13,7 +13,8 @@ from training.training.train import validate_model
 from training.training.utils import find_early_stopping_metric
 
 
-def predict_model(config: ModelConfig,
+def predict_model(mode: str,
+                  config: ModelConfig,
                   test_loaders: List[DataLoader],
                   workload_runs: WorkloadRuns,
                   model_dir: Path,
@@ -28,8 +29,10 @@ def predict_model(config: ModelConfig,
                 print(f"Starting validation for {test_path}")
                 test_stats = dict()
 
-                early_stop_m = find_early_stopping_metric(metrics)
-                model.load_state_dict(early_stop_m.best_model)
+                # In case of retraining, do not load the totally best model but the latest one
+                if mode != "retrain":
+                    early_stop_m = find_early_stopping_metric(metrics)
+                    model.load_state_dict(early_stop_m.best_model)
 
                 validate_model(config=config,
                                val_loader=test_loader,

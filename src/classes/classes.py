@@ -128,11 +128,17 @@ class ModelConfig:
     def color(self) -> str:
         return ColorManager.get_color(self.name)
 
-    def get_model_dir(self, source_path: Paths, database: Database) -> Path:
-        return source_path.models / self.name.NAME / database.db_name
+    def get_model_dir(self, source_path: Paths, database: Database, retrain: bool = False) -> Path:
+        if retrain:
+            return source_path.retraining_models / self.name.NAME / database.db_name
+        else:
+            return source_path.models / self.name.NAME / database.db_name
 
-    def get_eval_dir(self, source_path: Paths, database: Database) -> Path:
-        return source_path.evaluation / self.name.NAME / database.db_name
+    def get_eval_dir(self, source_path: Paths, database: Database, retrain: bool = False) -> Path:
+        if retrain:
+            return source_path.retraining_evaluation / self.name.NAME / database.db_name
+        else:
+            return source_path.evaluation / self.name.NAME / database.db_name
 
     def get_statistics(self, source_path: Paths, database: Database) -> Path:
         if self.name in [ModelName.MSCN, ModelName.QUERY_FORMER]:
@@ -157,19 +163,19 @@ class ModelConfig:
         else:
             return None
 
-    def get_training_workloads(self, target_db: Database) -> List[str]:
+    def get_training_workloads(self, target_db: Database, wl_name: str = "workload_100k_s1_c8220") -> List[str]:
         if self.type == ModelType.WL_AGNOSTIC:
             training_workloads = []
             for db in database_list:
                 if db.db_name != target_db.db_name:
-                    path = self.get_data_base_dir() / Path(db.db_name) / "workload_100k_s1_c8220.json"
+                    path = self.get_data_base_dir() / Path(db.db_name) / f"{wl_name}.json"
                     training_workloads.append(str(path))
 
             assert len(training_workloads) == 19, f"Found {len(training_workloads)}, but it should be 19"
             return training_workloads
 
         elif self.type == ModelType.WL_DRIVEN:
-            path = self.get_data_base_dir() / target_db.db_name / "workload_100k_s1_c8220.json"
+            path = self.get_data_base_dir() / target_db.db_name / f"{wl_name}.json"
             return [str(path)]
 
     def get_test_workloads(self, target_db: Database) -> str:
@@ -440,11 +446,12 @@ NO_COSTS_MODEL_CONFIGS = [
     MSCNModelConfig(),
     E2EModelConfig(),
     ZeroShotModelConfig(),
+    QPPNetModelConfig(),
     QueryFormerModelConfig(),
     DACEModelConfig(),
-    QPPNetModelConfig(),
-    DACEModelNoCostsConfig(),
     QPPModelNoCostsConfig(),
+    DACEModelNoCostsConfig(),
+
 ]
 
 ACT_CARD_MODEL_CONFIGS = [
@@ -469,7 +476,7 @@ ACT_CARD_ALL_MODEL_CONFIGS = [
     QueryFormerModelConfig(),
     DACEModelConfig(),
     FlatModelActCardModelConfig(),
-    QPPModelActCardsConfig(),
     ZeroShotModelActCardConfig(),
+    QPPModelActCardsConfig(),
     DACEModelActCardConfig()
 ]
